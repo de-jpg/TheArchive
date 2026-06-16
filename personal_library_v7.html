@@ -1,0 +1,328 @@
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+#app { min-height: 520px; font-family: var(--font-sans); padding: 2rem 0 3rem; }
+.shelf-title { text-align:center; font-size:13px; letter-spacing:0.12em; color:var(--color-text-secondary); margin-bottom:2rem; text-transform:uppercase; }
+.shelf-wrapper { position:relative; padding:0 0 12px; }
+.shelf-fade-left, .shelf-fade-right { position:absolute; top:0; bottom:12px; width:100px; pointer-events:none; z-index:10; }
+.shelf-fade-left { left:0; background:linear-gradient(to right, var(--color-background-primary) 0%, transparent 100%); }
+.shelf-fade-right { right:0; background:linear-gradient(to left, var(--color-background-primary) 0%, transparent 100%); }
+.shelf-track { overflow:hidden; cursor:grab; user-select:none; -webkit-user-select:none; }
+.shelf-track.dragging { cursor:grabbing; }
+.shelf-inner { display:flex; gap:4px; align-items:flex-end; }
+.shelf-plank { height:10px; background:#8B6914; border-radius:2px; margin-top:4px; box-shadow:0 3px 0 #6b4f10; }
+.book-spine {
+  display:flex; flex-direction:column; justify-content:space-between; align-items:center;
+  width:38px; min-width:38px; border-radius:3px 0 0 3px;
+  flex-shrink:0; position:relative;
+  border-right:2px solid rgba(0,0,0,0.15); padding:10px 0;
+}
+.book-spine.clickable { cursor:pointer; }
+.book-spine.borrowed { opacity:0.45; }
+.spine-title { writing-mode:vertical-rl; transform:rotate(180deg); font-size:11px; font-weight:500; color:rgba(255,255,255,0.92); letter-spacing:0.05em; flex:1; text-align:center; line-height:1.2; overflow:hidden; max-height:120px; }
+.spine-author { font-size:9px; color:rgba(255,255,255,0.6); writing-mode:vertical-rl; transform:rotate(180deg); white-space:nowrap; overflow:hidden; }
+.borrowed-dot { position:absolute; top:5px; right:1px; width:6px; height:6px; border-radius:50%; background:#e24b4a; }
+
+#overlay-bg {
+  display:none;
+  position:absolute; inset:0; z-index:50;
+  background:rgba(0,0,0,0.55);
+  align-items:center; justify-content:center;
+  min-height:520px;
+}
+#overlay-bg.active { display:flex; }
+
+.cover-scene {
+  perspective: 800px;
+  width:180px; height:270px;
+  cursor:pointer;
+}
+.cover-book {
+  width:100%; height:100%;
+  position:relative;
+  transform-style: preserve-3d;
+  transform: rotateY(90deg);
+  transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.cover-book.revealed { transform: rotateY(0deg); }
+
+.cover-face, .cover-spine-face {
+  position:absolute; inset:0;
+  backface-visibility:hidden;
+  border-radius:4px;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:flex-end;
+  padding:16px;
+}
+.cover-spine-face {
+  transform: rotateY(-90deg);
+  width:38px; left:auto; right:0;
+  border-radius:3px 0 0 3px;
+  border-right:2px solid rgba(0,0,0,0.2);
+}
+.cover-deco { position:absolute; top:20px; left:50%; transform:translateX(-50%); width:80px; height:80px; opacity:0.2; }
+.cover-title { font-size:15px; font-weight:500; color:rgba(255,255,255,0.95); text-align:center; line-height:1.35; position:relative; }
+.cover-author { font-size:11px; color:rgba(255,255,255,0.6); text-align:center; margin-top:6px; position:relative; }
+.cover-hint { position:absolute; bottom:-28px; left:50%; transform:translateX(-50%); font-size:11px; color:rgba(255,255,255,0.5); white-space:nowrap; }
+</style>
+
+<div id="app">
+  <p class="shelf-title">Josiah's Library</p>
+  <div class="shelf-wrapper" id="shelfWrapper">
+    <div class="shelf-fade-left"></div>
+    <div class="shelf-fade-right"></div>
+    <div class="shelf-track" id="shelfTrack">
+      <div class="shelf-inner" id="shelfInner"></div>
+    </div>
+    <div class="shelf-plank"></div>
+
+    <div id="overlay-bg" onclick="closeOverlay()">
+      <div class="cover-scene" onclick="event.stopPropagation()">
+        <div class="cover-book" id="coverBook">
+          <div class="cover-face" id="coverFace">
+            <div class="cover-deco">
+              <svg viewBox="0 0 80 80" fill="white"><circle cx="40" cy="40" r="30"/><circle cx="40" cy="40" r="18" id="coverDecoBg"/></svg>
+            </div>
+            <div class="cover-title" id="coverTitle"></div>
+            <div class="cover-author" id="coverAuthor"></div>
+          </div>
+          <div class="cover-spine-face" id="coverSpineFace"></div>
+        </div>
+        <div class="cover-hint">tap anywhere to close</div>
+      </div>
+    </div>
+  </div>
+  <p style="text-align:center;font-size:12px;color:var(--color-text-secondary);margin-top:1.5rem;">
+    Click a book to view &nbsp;·&nbsp;
+    <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#e24b4a;vertical-align:middle;margin-right:2px;"></span>Already borrowed
+  </p>
+</div>
+
+<script>
+const BOOKS = [
+  { id:1,  title:"Thinking, Fast and Slow",                      author:"Daniel Kahneman",      color:"#1D6A96", borrowed:false },
+  { id:2,  title:"The Creative Act",                             author:"Rick Rubin",            color:"#3A3A8C", borrowed:false },
+  { id:3,  title:"Sapiens",                                      author:"Yuval Noah Harari",     color:"#2E7D52", borrowed:true,  borrowedBy:"Ali" },
+  { id:4,  title:"The Architecture of Happiness",                author:"Alain de Botton",       color:"#7B3F8C", borrowed:false },
+  { id:5,  title:"Invisible Cities",                             author:"Italo Calvino",         color:"#B5451B", borrowed:false },
+  { id:6,  title:"A Pattern Language",                           author:"Christopher Alexander", color:"#1A5C6B", borrowed:true,  borrowedBy:"Ren" },
+  { id:7,  title:"Atomic Habits",                                author:"James Clear",           color:"#6B4226", borrowed:false },
+  { id:8,  title:"The Design of Everyday Things",                author:"Don Norman",            color:"#8C6B1A", borrowed:false },
+  { id:9,  title:"Siddhartha",                                   author:"Hermann Hesse",         color:"#2D6B4F", borrowed:false },
+  { id:10, title:"Ways of Seeing",                               author:"John Berger",           color:"#8C1A3A", borrowed:false },
+  { id:11, title:"Meditations",                                  author:"Marcus Aurelius",       color:"#4A6741", borrowed:false },
+  { id:12, title:"Complexity and Contradiction in Architecture", author:"Robert Venturi",        color:"#5C3A8C", borrowed:false },
+  { id:13, title:"The Stranger",                                 author:"Albert Camus",          color:"#8C3A1A", borrowed:false },
+  { id:14, title:"Quiet",                                        author:"Susan Cain",            color:"#1A4A8C", borrowed:true,  borrowedBy:"Mei" },
+  { id:15, title:"Finite and Infinite Games",                    author:"James Carse",           color:"#6B1A5C", borrowed:false },
+];
+
+function bookHeight(b) {
+  const h = b.title.split('').reduce((a,c) => a + c.charCodeAt(0), 0);
+  return 145 + (h % 45);
+}
+
+const BOOK_W = 42;
+const TARGET_SPEED = 0.5;
+const RESUME_DELAY = 4000;
+const RESUME_DURATION = 2500;
+
+let offsetX = 0;
+let paused = false;
+let overlayOpen = false;
+let resuming = false;
+let resumeStart = null;
+let resumeTimer = null;
+
+function easeInOutCubic(t) {
+  return t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2,3)/2;
+}
+
+function applyOffset() {
+  const inner = document.getElementById('shelfInner');
+  if (!inner) return;
+  const total = BOOK_W * BOOKS.length;
+  while (offsetX >= total * 2) offsetX -= total;
+  while (offsetX < 0) offsetX += total;
+  inner.style.transform = `translateX(${-offsetX}px)`;
+}
+
+function buildShelf() {
+  const inner = document.getElementById('shelfInner');
+  inner.innerHTML = '';
+  [...BOOKS, ...BOOKS, ...BOOKS].forEach(book => {
+    const h = bookHeight(book);
+    const el = document.createElement('div');
+    el.className = 'book-spine' + (book.borrowed ? ' borrowed' : ' clickable');
+    el.style.cssText = `background:${book.color};height:${h}px;`;
+    el.dataset.id = book.id;
+    el.dataset.borrowed = book.borrowed ? '1' : '0';
+    el.innerHTML = `
+      <span class="spine-title">${book.title}</span>
+      <span class="spine-author">${book.author.split(' ').pop()}</span>
+      ${book.borrowed ? '<span class="borrowed-dot"></span>' : ''}
+    `;
+    inner.appendChild(el);
+  });
+  offsetX = BOOK_W * BOOKS.length;
+  applyOffset();
+}
+
+function scheduleResume(delay) {
+  if (resumeTimer) clearTimeout(resumeTimer);
+  resumeTimer = setTimeout(() => {
+    paused = false;
+    resuming = true;
+    resumeStart = null;
+  }, delay);
+}
+
+function pauseFromDrag() {
+  paused = true;
+  resuming = false;
+  if (!overlayOpen) scheduleResume(8000);
+}
+
+function tick(ts) {
+  if (!paused) {
+    let speed = TARGET_SPEED;
+    if (resuming) {
+      if (!resumeStart) resumeStart = ts;
+      const t = Math.min((ts - resumeStart) / RESUME_DURATION, 1);
+      speed = TARGET_SPEED * easeInOutCubic(t);
+      if (t >= 1) resuming = false;
+    }
+    offsetX += speed;
+    applyOffset();
+  }
+  requestAnimationFrame(tick);
+}
+
+function showCover(id) {
+  const book = BOOKS.find(b => b.id === id);
+  if (!book) return;
+
+  paused = true;
+  resuming = false;
+  if (resumeTimer) clearTimeout(resumeTimer);
+  overlayOpen = true;
+
+  const face = document.getElementById('coverFace');
+  const spineFace = document.getElementById('coverSpineFace');
+  const coverBook = document.getElementById('coverBook');
+
+  face.style.background = book.color;
+  spineFace.style.background = book.color;
+  document.getElementById('coverDecoBg').setAttribute('fill', book.color);
+  document.getElementById('coverTitle').textContent = book.title;
+  document.getElementById('coverAuthor').textContent = book.author;
+
+  coverBook.classList.remove('revealed');
+  document.getElementById('overlay-bg').classList.add('active');
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      coverBook.classList.add('revealed');
+    });
+  });
+}
+
+function closeOverlay() {
+  const coverBook = document.getElementById('coverBook');
+  coverBook.classList.remove('revealed');
+  setTimeout(() => {
+    document.getElementById('overlay-bg').classList.remove('active');
+    overlayOpen = false;
+    scheduleResume(RESUME_DELAY);
+  }, 400);
+}
+
+const track = document.getElementById('shelfTrack');
+let dragStartX = 0, offsetAtDragStart = 0, isDragging = false;
+let didMove = false, lastX = 0, vel = 0, pendingBookId = null;
+
+track.addEventListener('mousedown', e => {
+  isDragging = true; didMove = false;
+  dragStartX = e.clientX; offsetAtDragStart = offsetX;
+  lastX = e.clientX; vel = 0; pendingBookId = null;
+  const spine = e.target.closest('.book-spine');
+  if (spine && spine.dataset.borrowed === '0') pendingBookId = parseInt(spine.dataset.id);
+  track.classList.add('dragging');
+  e.preventDefault();
+});
+
+window.addEventListener('mousemove', e => {
+  if (!isDragging) return;
+  const dx = e.clientX - dragStartX;
+  if (Math.abs(dx) > 5) { didMove = true; pendingBookId = null; }
+  if (didMove) {
+    offsetX = offsetAtDragStart - dx;
+    applyOffset();
+    vel = (lastX - e.clientX) * 0.6;
+    lastX = e.clientX;
+    pauseFromDrag();
+  }
+});
+
+window.addEventListener('mouseup', () => {
+  if (!isDragging) return;
+  isDragging = false;
+  track.classList.remove('dragging');
+  if (!didMove && pendingBookId !== null) {
+    showCover(pendingBookId);
+  } else if (didMove) {
+    let v = vel;
+    (function glide() {
+      if (Math.abs(v) < 0.2) return;
+      offsetX += v; applyOffset(); v *= 0.93;
+      requestAnimationFrame(glide);
+    })();
+  }
+  pendingBookId = null;
+});
+
+let tStartX=0, tOffsetStart=0, tDidMove=false, tLastX=0, tVel=0, tPendingId=null;
+
+track.addEventListener('touchstart', e => {
+  tStartX = e.touches[0].clientX; tOffsetStart = offsetX;
+  tDidMove = false; tLastX = e.touches[0].clientX; tVel = 0; tPendingId = null;
+  const spine = e.target.closest('.book-spine');
+  if (spine && spine.dataset.borrowed === '0') tPendingId = parseInt(spine.dataset.id);
+}, { passive:true });
+
+track.addEventListener('touchmove', e => {
+  const dx = e.touches[0].clientX - tStartX;
+  if (Math.abs(dx) > 5) { tDidMove = true; tPendingId = null; }
+  if (tDidMove) {
+    offsetX = tOffsetStart - dx; applyOffset();
+    tVel = (tLastX - e.touches[0].clientX) * 0.6;
+    tLastX = e.touches[0].clientX;
+    pauseFromDrag();
+  }
+}, { passive:true });
+
+track.addEventListener('touchend', () => {
+  if (!tDidMove && tPendingId !== null) showCover(tPendingId);
+  else if (tDidMove) {
+    let v = tVel;
+    (function glide() {
+      if (Math.abs(v) < 0.2) return;
+      offsetX += v; applyOffset(); v *= 0.93;
+      requestAnimationFrame(glide);
+    })();
+  }
+  tPendingId = null;
+});
+
+buildShelf();
+
+const inner = document.getElementById('shelfInner');
+inner.style.opacity = '0';
+requestAnimationFrame(() => {
+  requestAnimationFrame(() => {
+    inner.style.transition = 'opacity 0.4s';
+    inner.style.opacity = '1';
+    requestAnimationFrame(tick);
+  });
+});
+</script>
