@@ -1,5 +1,4 @@
 # https://de-jpg.github.io/TheArchive/
-body{font-family:'Courier New',Courier,monospace;display:flex;flex-direction:column;align-items:center;min-height:100vh;}
 an archive of the books i own
 
 made for the friends that bug me to loan them
