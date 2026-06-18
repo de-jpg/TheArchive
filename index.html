@@ -146,12 +146,6 @@ html{scroll-behavior:smooth;}
 
 /* MOBILE: selected book layout */
 @media (max-width:600px){
-  #bookContainer{
-    position:fixed!important;
-    left:50%!important;
-    transform:translateX(-50%)!important;
-    top:10vh!important;
-  }
   #infoPanel{
     position:fixed!important;
     left:0!important;right:0!important;width:100vw!important;
@@ -162,7 +156,7 @@ html{scroll-behavior:smooth;}
     max-height:48vh;overflow-y:auto;
   }
   #infoPanel.visible{transform:translateY(0)!important;transition:opacity 0.4s ease,transform 0.4s ease!important;}
-  .cover-scene,.cover-book{width:150px!important;height:224px!important;}
+  .cover-scene,.cover-book{width:160px!important;height:240px!important;}
 }
 </style>
 </head>
@@ -835,8 +829,9 @@ function runFilter(){
     return cm&&tm;
   });
   grid.innerHTML='';grid.classList.add('open');
-  // bigger cards: 120px wide + ~64px margins = ~184px each
-  const perRow=Math.max(3,Math.floor((Math.min(window.innerWidth,1200)-100)/184));
+  // 2 per row on mobile, bigger calc on desktop
+  const isMobile=window.innerWidth<=600;
+  const perRow=isMobile?2:Math.max(3,Math.floor((Math.min(window.innerWidth,1200)-100)/184));
   for(let i=0;i<results.length;i+=perRow){
     const chunk=results.slice(i,i+perRow);
     const rowWrap=document.createElement('div');rowWrap.style.cssText='display:flex;flex-direction:column;align-items:center;width:100%;';
