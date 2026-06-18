@@ -138,6 +138,58 @@ h1{font-size:10px;letter-spacing:0.2em;color:#333;text-transform:lowercase;margi
 /* Smooth scroll for whole page */
 html{scroll-behavior:smooth;}
 
+/* Desktop: scale all text up slightly */
+@media (min-width:601px){
+  html{font-size:112.5%;}
+}
+
+/* ADMIN MODAL */
+#adminModal{display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,0.96);align-items:center;justify-content:center;flex-direction:column;}
+#adminModal.active{display:flex;}
+.admin-gate{background:#0d0d0d;border:1px solid rgba(255,255,255,0.08);border-radius:2px;padding:32px 36px;width:300px;}
+.admin-gate h2{font-size:10px;letter-spacing:0.2em;color:rgba(255,255,255,0.3);font-weight:400;font-family:'Courier New',monospace;text-transform:lowercase;margin-bottom:24px;}
+.admin-gate label{font-size:9px;letter-spacing:0.14em;color:rgba(255,255,255,0.22);font-family:'Courier New',monospace;display:block;margin-bottom:6px;text-transform:lowercase;}
+.admin-gate input,.admin-gate select{width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.8);font-family:'Courier New',monospace;font-size:12px;padding:9px 12px;border-radius:1px;margin-bottom:14px;outline:none;appearance:none;-webkit-appearance:none;}
+.admin-gate input:focus,.admin-gate select:focus{border-color:rgba(255,255,255,0.28);}
+.admin-gate input::placeholder{color:rgba(255,255,255,0.18);}
+.admin-gate select option{background:#0d0d0d;color:rgba(255,255,255,0.8);}
+.admin-submit{width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.16);color:rgba(255,255,255,0.72);font-family:'Courier New',monospace;font-size:10px;padding:11px;border-radius:1px;cursor:pointer;transition:background 0.2s;letter-spacing:0.1em;margin-top:4px;}
+.admin-submit:hover{background:rgba(255,255,255,0.13);}
+.admin-error{font-size:10px;color:#a06060;font-family:'Courier New',monospace;margin-top:4px;min-height:14px;}
+#adminCodeGate{display:block;}
+#adminPanel{display:none;}
+.admin-close{position:absolute;top:22px;right:26px;font-size:18px;color:rgba(255,255,255,0.2);cursor:pointer;font-family:'Courier New',monospace;transition:color 0.2s;background:none;border:none;}
+.admin-close:hover{color:rgba(255,255,255,0.55);}
+
+/* Book search dropdown */
+.book-search-wrap{position:relative;margin-bottom:14px;}
+.book-search-wrap input{margin-bottom:0;}
+.book-dropdown{position:absolute;top:100%;left:0;right:0;background:#0d0d0d;border:1px solid rgba(255,255,255,0.12);border-top:none;max-height:160px;overflow-y:auto;z-index:400;display:none;}
+.book-dropdown.open{display:block;}
+.book-dropdown-item{padding:8px 12px;font-size:10px;font-family:'Courier New',monospace;color:rgba(255,255,255,0.65);cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.05);transition:background 0.15s;}
+.book-dropdown-item:hover{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.9);}
+
+/* Active loans section */
+#adminLoansSection{width:100%;max-width:340px;margin-top:24px;}
+#adminLoansSection h3{font-size:9px;letter-spacing:0.18em;color:rgba(255,255,255,0.22);font-family:'Courier New',monospace;text-transform:lowercase;margin-bottom:12px;}
+.admin-loan-card{background:#0d0d0d;border:1px solid rgba(255,255,255,0.07);border-radius:1px;padding:14px 18px;margin-bottom:10px;position:relative;}
+.admin-loan-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:rgba(180,60,60,0.6);border-radius:2px 0 0 2px;}
+.alc-title{font-size:11px;color:rgba(255,255,255,0.82);font-family:'Courier New',monospace;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.alc-meta{font-size:9px;color:rgba(255,255,255,0.28);font-family:'Courier New',monospace;margin-bottom:10px;}
+.alc-due{font-size:9px;color:rgba(255,255,255,0.35);font-family:'Courier New',monospace;}
+.alc-days{font-size:20px;color:rgba(255,255,255,0.75);font-family:'Courier New',monospace;position:absolute;right:18px;top:14px;line-height:1;}
+.alc-days-label{font-size:8px;color:rgba(255,255,255,0.25);display:block;text-align:right;font-family:'Courier New',monospace;}
+.alc-btns{display:flex;gap:6px;margin-top:8px;}
+.alc-btn{background:transparent;border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.3);font-family:'Courier New',monospace;font-size:9px;padding:5px 10px;border-radius:1px;cursor:pointer;transition:all 0.2s;letter-spacing:0.08em;}
+.alc-btn:hover{border-color:rgba(255,255,255,0.3);color:rgba(255,255,255,0.7);}
+.alc-btn.returned{border-color:rgba(60,120,60,0.4);color:rgba(80,160,80,0.7);}
+.alc-btn.returned:hover{border-color:rgba(60,160,60,0.6);color:rgba(100,200,100,0.9);}
+.admin-empty{font-size:10px;color:rgba(255,255,255,0.18);font-family:'Courier New',monospace;text-align:center;padding:20px 0;}
+
+/* Title admin trigger */
+#siteTitle{cursor:pointer;transition:color 0.2s;}
+#siteTitle:hover{color:rgba(255,255,255,0.15);}
+
 /* Mobile cover title: hidden by default, revealed on touch */
 @media (max-width:600px){
   .cover-book-title,.cover-book-author{
@@ -238,6 +290,50 @@ html{scroll-behavior:smooth;}
   </div>
 </div>
 
+<div id="adminModal">
+  <button class="admin-close" onclick="closeAdminModal()">&#x2715;</button>
+
+  <!-- Code gate -->
+  <div class="admin-gate" id="adminCodeGate">
+    <h2>the archive — admin</h2>
+    <label>access code</label>
+    <input type="password" id="adminCodeInput" placeholder="enter code" autocomplete="off"/>
+    <div class="admin-error" id="adminCodeError"></div>
+    <button class="admin-submit" onclick="checkAdminCode()">enter</button>
+  </div>
+
+  <!-- Admin panel (shown after correct code) -->
+  <div class="admin-gate" id="adminPanel" style="display:none;">
+    <h2>log a delivery</h2>
+    <label>user</label>
+    <select id="adminUserSelect">
+      <option value="" disabled selected>select...</option>
+      <option value="ZACHARY Teh">Zachary Teh</option>
+      <option value="Jenn Xie">Jenn Xie</option>
+      <option value="YueFoong">YueFoong</option>
+      <option value="Youssef El Hakim">Youssef El Hakim</option>
+      <option value="SJ">SJ</option>
+      <option value="Josiah">Josiah</option>
+      <option value="Isaac Lim">Isaac Lim</option>
+    </select>
+    <label>book</label>
+    <div class="book-search-wrap">
+      <input type="text" id="adminBookSearch" placeholder="search titles..." autocomplete="off" oninput="filterBookDropdown()" onfocus="openBookDropdown()" onblur="scheduleCloseDropdown()"/>
+      <div class="book-dropdown" id="bookDropdown"></div>
+    </div>
+    <input type="hidden" id="adminBookSelected"/>
+    <label>delivery date</label>
+    <input type="text" id="adminDeliveryDate" readonly/>
+    <div class="admin-error" id="adminPanelError"></div>
+    <button class="admin-submit" onclick="logDelivery()">log delivery — start 2-week countdown</button>
+  </div>
+
+  <div id="adminLoansSection" style="display:none;">
+    <h3>active loans</h3>
+    <div id="adminLoansList"></div>
+  </div>
+</div>
+
 <script>
 // code → display name
 const CODE_NAMES={
@@ -246,7 +342,7 @@ const CODE_NAMES={
 };
 const VALID_CODES=Object.keys(CODE_NAMES);
 const EMAILJS_PUBLIC="6cQGiB6sXH0jf6gvc";
-const EMAILJS_TEMPLATE="template_vs8ka9l";
+const EMAILJS_TEMPLATE="template_telfgxa";
 const EMAILJS_SERVICE="service_hjjj54d";
 const MAX_LOANS=2;
 const loans={};
@@ -911,6 +1007,248 @@ function runFilter(){
   }
 }
 
+// ── ADMIN PANEL ──
+// Code is split to avoid plain-text exposure
+const _ac = [String.fromCharCode(51,48),String.fromCharCode(54,48)].join('');
+
+const ADMIN_USERS = [
+  "ZACHARY Teh","Jenn Xie","YueFoong","Youssef El Hakim","SJ","Josiah","Isaac Lim"
+];
+
+// Use book titles from RAW for search
+const ALL_BOOK_TITLES = RAW.map(b => b.title);
+
+// Admin storage key (separate from loan flow)
+const ADMIN_KEY = 'jo_archive_admin_loans';
+
+function getAdminLoans(){
+  try{ return JSON.parse(localStorage.getItem(ADMIN_KEY)||'[]'); }
+  catch{ return []; }
+}
+function saveAdminLoans(loans){
+  localStorage.setItem(ADMIN_KEY, JSON.stringify(loans));
+}
+
+// Title click opens admin gate
+document.getElementById('siteTitle').addEventListener('click', () => {
+  document.getElementById('adminCodeInput').value = '';
+  document.getElementById('adminCodeError').textContent = '';
+  document.getElementById('adminCodeGate').style.display = 'block';
+  document.getElementById('adminPanel').style.display = 'none';
+  document.getElementById('adminLoansSection').style.display = 'none';
+  document.getElementById('adminModal').classList.add('active');
+  setTimeout(() => document.getElementById('adminCodeInput').focus(), 80);
+});
+
+document.getElementById('adminCodeInput').addEventListener('keydown', e => {
+  if(e.key === 'Enter') checkAdminCode();
+});
+
+function checkAdminCode(){
+  const val = document.getElementById('adminCodeInput').value.trim();
+  if(val === _ac){
+    document.getElementById('adminCodeGate').style.display = 'none';
+    showAdminPanel();
+  } else {
+    document.getElementById('adminCodeError').textContent = 'incorrect code.';
+    document.getElementById('adminCodeInput').value = '';
+    document.getElementById('adminCodeInput').focus();
+  }
+}
+
+function showAdminPanel(){
+  const today = new Date();
+  const dd = String(today.getDate()).padStart(2,'0');
+  const mm = String(today.getMonth()+1).padStart(2,'0');
+  const yyyy = today.getFullYear();
+  document.getElementById('adminDeliveryDate').value = `${dd}/${mm}/${yyyy}`;
+  document.getElementById('adminBookSearch').value = '';
+  document.getElementById('adminBookSelected').value = '';
+  document.getElementById('adminUserSelect').value = '';
+  document.getElementById('adminPanelError').textContent = '';
+  buildBookDropdown('');
+  document.getElementById('adminPanel').style.display = 'block';
+  renderAdminLoans();
+  document.getElementById('adminLoansSection').style.display = 'block';
+}
+
+function buildBookDropdown(query){
+  const dd = document.getElementById('bookDropdown');
+  const q = query.toLowerCase();
+  const filtered = q ? ALL_BOOK_TITLES.filter(t => t.toLowerCase().includes(q)) : ALL_BOOK_TITLES;
+  dd.innerHTML = '';
+  if(!filtered.length){
+    dd.innerHTML = '<div class="book-dropdown-item" style="color:rgba(255,255,255,0.2);cursor:default;">no results</div>';
+  } else {
+    filtered.forEach(title => {
+      const item = document.createElement('div');
+      item.className = 'book-dropdown-item';
+      item.textContent = title;
+      item.addEventListener('mousedown', e => {
+        e.preventDefault();
+        selectBook(title);
+      });
+      dd.appendChild(item);
+    });
+  }
+}
+
+function filterBookDropdown(){
+  const q = document.getElementById('adminBookSearch').value;
+  buildBookDropdown(q);
+  openBookDropdown();
+  // Clear selection if user is typing again
+  document.getElementById('adminBookSelected').value = '';
+}
+
+function openBookDropdown(){
+  buildBookDropdown(document.getElementById('adminBookSearch').value);
+  document.getElementById('bookDropdown').classList.add('open');
+}
+
+let _dropdownCloseTimer = null;
+function scheduleCloseDropdown(){
+  _dropdownCloseTimer = setTimeout(() => {
+    document.getElementById('bookDropdown').classList.remove('open');
+  }, 200);
+}
+
+function selectBook(title){
+  document.getElementById('adminBookSearch').value = title;
+  document.getElementById('adminBookSelected').value = title;
+  document.getElementById('bookDropdown').classList.remove('open');
+  if(_dropdownCloseTimer) clearTimeout(_dropdownCloseTimer);
+}
+
+async function logDelivery(){
+  const user = document.getElementById('adminUserSelect').value;
+  const book = document.getElementById('adminBookSelected').value;
+  const err = document.getElementById('adminPanelError');
+  if(!user){ err.textContent = 'please select a user.'; return; }
+  if(!book){ err.textContent = 'please select a book.'; return; }
+
+  const dateStr = document.getElementById('adminDeliveryDate').value; // DD/MM/YYYY
+  const [dd,mm,yyyy] = dateStr.split('/');
+  const deliveryDate = new Date(parseInt(yyyy), parseInt(mm)-1, parseInt(dd));
+  const dueDate = new Date(deliveryDate);
+  dueDate.setDate(dueDate.getDate() + 14);
+  const dueISO = dueDate.toISOString();
+
+  const btn = document.querySelector('#adminPanel .admin-submit');
+  btn.textContent = 'logging...'; btn.disabled = true;
+
+  // Schedule EmailJS to send at due date (store in localStorage, check on load)
+  const loans = getAdminLoans();
+  const existing = loans.findIndex(l => l.book === book && l.user === user);
+  const entry = { user, book, deliveryDate: deliveryDate.toISOString(), dueDate: dueISO, emailSent: false };
+  if(existing >= 0){ loans[existing] = entry; }
+  else { loans.push(entry); }
+  saveAdminLoans(loans);
+
+  // Check if due date is today or past → send immediately
+  const now = new Date(); now.setHours(0,0,0,0);
+  const due = new Date(dueISO); due.setHours(0,0,0,0);
+  if(due <= now){
+    await sendLoanEmail(user, book, loans, entry);
+  }
+
+  renderAdminLoans();
+  err.textContent = '';
+  btn.textContent = 'logged!'; 
+  setTimeout(() => { btn.textContent = 'log delivery — start 2-week countdown'; btn.disabled = false; }, 1600);
+  // Reset form
+  document.getElementById('adminBookSearch').value = '';
+  document.getElementById('adminBookSelected').value = '';
+  document.getElementById('adminUserSelect').value = '';
+}
+
+async function sendLoanEmail(user, book, loans, entry){
+  try{
+    await emailjs.send('service_hjjj54d', 'template_telfgxa', {
+      'user-name': user,
+      'book_name': book,
+    });
+    // Mark as sent
+    entry.emailSent = true;
+    saveAdminLoans(loans);
+  } catch(e){
+    console.error('EmailJS admin send error:', e);
+  }
+}
+
+function renderAdminLoans(){
+  const list = document.getElementById('adminLoansList');
+  const loans = getAdminLoans();
+  if(!loans.length){ list.innerHTML = '<div class="admin-empty">no active loans</div>'; return; }
+  list.innerHTML = '';
+  // Sort by days left
+  const now = new Date(); now.setHours(0,0,0,0);
+  const sorted = [...loans].sort((a,b) => new Date(a.dueDate) - new Date(b.dueDate));
+  sorted.forEach((loan, idx) => {
+    const due = new Date(loan.dueDate); due.setHours(0,0,0,0);
+    const diff = Math.round((due - now) / 86400000);
+    const dueStr = new Date(loan.dueDate).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+    const card = document.createElement('div');
+    card.className = 'admin-loan-card';
+    card.innerHTML = `
+      <div class="alc-title">${loan.book}</div>
+      <div class="alc-meta">${loan.user}</div>
+      <div class="alc-due">due ${dueStr}</div>
+      <div class="alc-days">${Math.max(0,diff)}<span class="alc-days-label">days left</span></div>
+      <div class="alc-btns">
+        <button class="alc-btn" onclick="remindLoan(${loans.indexOf(loan)})">remind</button>
+        <button class="alc-btn returned" onclick="markReturned(${loans.indexOf(loan)})">returned</button>
+      </div>`;
+    list.appendChild(card);
+  });
+}
+
+async function remindLoan(idx){
+  const loans = getAdminLoans();
+  const loan = loans[idx];
+  if(!loan) return;
+  try{
+    await emailjs.send('service_hjjj54d', 'template_telfgxa', {
+      'user-name': loan.user,
+      'book_name': loan.book,
+    });
+    alert('reminder sent!');
+  } catch(e){ alert('could not send.'); }
+}
+
+function markReturned(idx){
+  const loans = getAdminLoans();
+  loans.splice(idx,1);
+  saveAdminLoans(loans);
+  renderAdminLoans();
+}
+
+function closeAdminModal(){
+  document.getElementById('adminModal').classList.remove('active');
+}
+
+function checkOverdueLoans(){
+  const loans = getAdminLoans();
+  const now = new Date(); now.setHours(0,0,0,0);
+  let updated = false;
+  loans.forEach(loan => {
+    if(loan.emailSent) return;
+    const due = new Date(loan.dueDate); due.setHours(0,0,0,0);
+    if(due <= now){
+      sendLoanEmail(loan.user, loan.book, loans, loan);
+      updated = true;
+    }
+  });
+  if(updated) saveAdminLoans(loans);
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', e => {
+  if(!e.target.closest('.book-search-wrap')){
+    document.getElementById('bookDropdown')?.classList.remove('open');
+  }
+});
+
 window.addEventListener('load',()=>{
   if(window.emailjs)emailjs.init({publicKey:EMAILJS_PUBLIC});
   buildShelf();
@@ -918,6 +1256,8 @@ window.addEventListener('load',()=>{
   inner.style.opacity='0';
   setTimeout(()=>{inner.style.transition='opacity 1.2s ease';inner.style.opacity='1';},150);
   requestAnimationFrame(tick);
+  // Check overdue loans after emailjs is ready
+  setTimeout(checkOverdueLoans, 1500);
 });
 </script>
 
