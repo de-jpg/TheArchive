@@ -131,6 +131,10 @@ h1{font-size:10px;letter-spacing:0.2em;color:#333;text-transform:lowercase;margi
 .loan-cancel{background:transparent;border:1px solid rgba(255,255,255,0.06);color:rgba(255,255,255,0.22);font-family:'Courier New',monospace;font-size:10px;padding:9px 12px;border-radius:1px;cursor:pointer;}
 .loan-error{font-size:10px;color:#a06060;font-family:'Courier New',monospace;margin-top:4px;min-height:14px;}
 
+@keyframes shake{0%,100%{transform:translateX(0);}15%{transform:translateX(-5px);}30%{transform:translateX(5px);}45%{transform:translateX(-4px);}60%{transform:translateX(4px);}75%{transform:translateX(-2px);}90%{transform:translateX(2px);}}
+.loan-btn.on-loan{border-color:rgba(180,60,60,0.4);color:rgba(200,80,80,0.8);cursor:default;pointer-events:none;}
+.loan-btn.shake{animation:shake 0.5s ease;}
+
 /* Smooth scroll for whole page */
 html{scroll-behavior:smooth;}
 
@@ -163,7 +167,7 @@ html{scroll-behavior:smooth;}
 <body>
 
 <div style="flex:1;min-height:clamp(60px,8vh,120px);"></div>
-<h1>jo's library</h1>
+<h1 id="siteTitle">jo's library</h1>
 
 <div class="shelf-wrapper">
   <div class="shelf-fade-left"></div>
@@ -561,6 +565,30 @@ function tick(ts){
 
 function isMobile(){return window.innerWidth<=600;}
 
+// ── LOAN STATUS ──
+const ADMIN_STORAGE_KEY='jo_archive_loans';
+function getActiveLoan(bookTitle){
+  try{
+    const loans=JSON.parse(localStorage.getItem(ADMIN_STORAGE_KEY)||'[]');
+    const loan=loans.find(l=>l.title===bookTitle);
+    if(!loan)return null;
+    // check if still within 2-week window
+    const due=new Date(loan.date);due.setDate(due.getDate()+14);
+    const now=new Date();now.setHours(0,0,0,0);due.setHours(0,0,0,0);
+    if(due<now)return null; // loan expired, book available again
+    const dueStr=due.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+    return{...loan,dueStr};
+  }catch{return null;}
+}
+function shakeOnLoan(e){
+  const btn=e.currentTarget;
+  btn.classList.remove('shake');
+  void btn.offsetWidth; // reflow to restart animation
+  btn.classList.add('shake');
+  btn.addEventListener('animationend',()=>btn.classList.remove('shake'),{once:true});
+}
+
+
 function showCover(id,spineEl){
   const book=BOOKS.find(b=>b.id===id);
   if(!book||overlayOpen||isClosing)return;
@@ -584,6 +612,19 @@ function showCover(id,spineEl){
   fill('infoAuthor').textContent=book.author==='N/A'?'':book.author;
   fill('infoDesc').textContent=book.tags;
   fill('loanModalTitle').textContent=book.title;
+
+  // Check if this book is currently on loan
+  const loanBtn=document.getElementById('loanBtn');
+  loanBtn.classList.remove('on-loan','shake');
+  const activeLoan=getActiveLoan(book.title);
+  if(activeLoan){
+    loanBtn.classList.add('on-loan');
+    loanBtn.textContent=`on loan — ${activeLoan.dueStr}`;
+    loanBtn.addEventListener('mouseenter',shakeOnLoan,{once:true});
+    loanBtn.addEventListener('touchstart',shakeOnLoan,{once:true,passive:true});
+  } else {
+    loanBtn.textContent='loan';
+  }
 
   const mobile=isMobile();
   const sr=spineEl.getBoundingClientRect();
@@ -652,6 +693,9 @@ function closeOverlay(){
   document.getElementById('coverTitle').classList.remove('touch-visible');
   document.getElementById('coverAuthor').classList.remove('touch-visible');
   document.getElementById('infoPanel').classList.remove('visible');
+  const loanBtn=document.getElementById('loanBtn');
+  loanBtn.classList.remove('on-loan','shake');
+  loanBtn.textContent='loan';
   const cb=document.getElementById('coverBook');
   const bc=document.getElementById('bookContainer');
   bc.classList.remove('interactive');
@@ -743,9 +787,33 @@ document.getElementById('loanConfirm').addEventListener('click',async()=>{
   }
 });
 
-// Drag on shelf
 const track=document.getElementById('shelfTrack');
 let dragStartX=0,offsetAtDragStart=0,isDragging=false,didMove=false,lastX=0,vel=0,pendingId=null,pendingEl=null;
+
+// Smooth wheel scrolling
+let wheelTarget=0,wheelCurrent=0,wheelRafId=null;
+function wheelLoop(){
+  wheelCurrent+=(wheelTarget-wheelCurrent)*0.12;
+  wheelTarget*=0.82;
+  if(Math.abs(wheelCurrent)<0.05&&Math.abs(wheelTarget)<0.05){
+    wheelCurrent=0;wheelTarget=0;wheelRafId=null;scheduleResume(3000);return;
+  }
+  offsetX+=wheelCurrent;
+  if(offsetX>=setWidth*2)offsetX-=setWidth;
+  if(offsetX<0)offsetX+=setWidth;
+  document.getElementById('shelfInner').style.transform=`translateX(${-offsetX}px)`;
+  wheelRafId=requestAnimationFrame(wheelLoop);
+}
+track.addEventListener('wheel',e=>{
+  if(overlayOpen)return;
+  e.preventDefault();
+  const raw=Math.abs(e.deltaY)>Math.abs(e.deltaX)?e.deltaY:e.deltaX;
+  const step=e.deltaMode===1?raw*20:raw;
+  wheelTarget+=step*0.3;
+  wheelTarget=Math.max(-60,Math.min(60,wheelTarget));
+  paused=true;resuming=false;
+  if(!wheelRafId)wheelRafId=requestAnimationFrame(wheelLoop);
+},{passive:false});
 track.addEventListener('mousedown',e=>{
   if(overlayOpen)return;
   isDragging=true;didMove=false;dragStartX=e.clientX;offsetAtDragStart=offsetX;
@@ -852,5 +920,6 @@ window.addEventListener('load',()=>{
   requestAnimationFrame(tick);
 });
 </script>
+
 </body>
 </html>
